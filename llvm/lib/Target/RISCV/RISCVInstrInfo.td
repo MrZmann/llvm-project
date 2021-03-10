@@ -279,6 +279,23 @@ def csr_sysreg : Operand<XLenVT> {
   let OperandNamespace = "RISCVOp";
 }
 
+def DCOperand: AsmOperandClass {
+  let Name = "DC";
+  let ParserMethod = "parseDC";
+}
+
+def DC : Operand<XLenVT> {
+  let ParserMatchClass = DCOperand;
+/*
+ * This didn't compile, said wrong namespace 
+ * maybe operand type can only be used once?
+ * let OperandType = "OPERAND_UIMM5";
+ * let OperandNamespace = "RISCVOp";
+ *
+ * /
+}
+
+
 // A parameterized register class alternative to i32imm/i64imm from Target.td.
 def ixlenimm : Operand<XLenVT>;
 
@@ -372,6 +389,14 @@ class Store_rri<bits<3> funct3, string opcodestr>
     : RVInstS<funct3, OPC_STORE, (outs),
               (ins GPR:$rs2, GPR:$rs1, simm12:$imm12),
               opcodestr, "$rs2, ${imm12}(${rs1})">;
+
+let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
+class MERRY<bit arithshift, bits<3> funct3, string opcodestr>
+    : RVInstIShiftW<arithshift, funct3, OPC_OP_IMM_32, (outs),
+                    (ins DC:$rd, DC:$rs1, DC:$shamt), opcodestr,
+                    "$rd, $rs1, $shamt">,
+      Sched<[WriteShift32, ReadShift32]>;
+def MERRY_ASM : MERRY<0, 0b111, "merry_asm">;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class ALU_ri<bits<3> funct3, string opcodestr>

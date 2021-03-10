@@ -155,6 +155,7 @@ class RISCVAsmParser : public MCTargetAsmParser {
   OperandMatchResultTy parseImmediate(OperandVector &Operands);
   OperandMatchResultTy parseRegister(OperandVector &Operands,
                                      bool AllowParens = false);
+  OperandMatchResultTy parseDC(OperandVector &Operands);
   OperandMatchResultTy parseMemOpBaseReg(OperandVector &Operands);
   OperandMatchResultTy parseAtomicMemOp(OperandVector &Operands);
   OperandMatchResultTy parseOperandWithModifier(OperandVector &Operands);
@@ -259,6 +260,7 @@ struct RISCVOperand : public MCParsedAsmOperand {
   enum class KindTy {
     Token,
     Register,
+    DC,
     Immediate,
     SystemRegister,
     VType,
@@ -268,6 +270,10 @@ struct RISCVOperand : public MCParsedAsmOperand {
 
   struct RegOp {
     MCRegister RegNum;
+  };
+
+  struct DCOp {
+    unsigned offset;
   };
 
   struct ImmOp {
@@ -290,6 +296,7 @@ struct RISCVOperand : public MCParsedAsmOperand {
   union {
     StringRef Tok;
     RegOp Reg;
+    DCOp DC;
     ImmOp Imm;
     struct SysRegOp SysReg;
     struct VTypeOp VType;
@@ -306,6 +313,9 @@ public:
     switch (Kind) {
     case KindTy::Register:
       Reg = o.Reg;
+      break;
+    case KindTy::DC:
+      DC = o.DC;
       break;
     case KindTy::Immediate:
       Imm = o.Imm;
@@ -324,6 +334,7 @@ public:
 
   bool isToken() const override { return Kind == KindTy::Token; }
   bool isReg() const override { return Kind == KindTy::Register; }
+  bool isDC() const { return Kind == KindTy::DC; }
   bool isV0Reg() const {
     return Kind == KindTy::Register && Reg.RegNum == RISCV::V0;
   }
@@ -714,6 +725,11 @@ public:
     return StringRef(SysReg.Data, SysReg.Length);
   }
 
+  unsigned getDC() const {
+    assert(Kind == KindTy::DC && "Invalid type access!");
+    return DC.offset; 
+  }
+
   const MCExpr *getImm() const {
     assert(Kind == KindTy::Immediate && "Invalid type access!");
     return Imm.Val;
@@ -743,6 +759,9 @@ public:
       break;
     case KindTy::Register:
       OS << "<register " << RegName(getReg()) << ">";
+      break;
+    case KindTy::DC:
+      OS << "<dc[" << getDC() << "]>";
       break;
     case KindTy::Token:
       OS << "'" << getToken() << "'";
@@ -777,6 +796,17 @@ public:
     Op->IsRV64 = IsRV64;
     return Op;
   }
+
+  static std::unique_ptr<RISCVOperand> createDC(unsigned offset, SMLoc S,
+                                                 SMLoc E, bool IsRV64) {
+    auto Op = std::make_unique<RISCVOperand>(KindTy::DC);
+    Op->DC.offset = offset;
+    Op->StartLoc = S;
+    Op->EndLoc = E;
+    Op->IsRV64 = IsRV64;
+    return Op;
+  }
+
 
   static std::unique_ptr<RISCVOperand> createImm(const MCExpr *Val, SMLoc S,
                                                  SMLoc E, bool IsRV64) {
@@ -824,6 +854,12 @@ public:
   void addRegOperands(MCInst &Inst, unsigned N) const {
     assert(N == 1 && "Invalid number of operands!");
     Inst.addOperand(MCOperand::createReg(getReg()));
+  }
+
+  void addDCOperands(MCInst &Inst, unsigned N) const {
+    assert(N == 1 && "Invalid number of operands!");
+    // Is this right?
+    Inst.addOperand(MCOperand::createImm(getDC()));
   }
 
   void addImmOperands(MCInst &Inst, unsigned N) const {
@@ -1333,6 +1369,50 @@ RISCVAsmParser::parseCSRSystemRegister(OperandVector &Operands) {
   return MatchOperand_NoMatch;
 }
 
+OperandMatchResultTy RISCVAsmParser::parseDC(OperandVector &Operands) {
+  SMLoc S = getLoc();
+  SMLoc E = SMLoc::getFromPointer(S.getPointer() - 1);
+
+  if (getLexer().isNot(AsmToken::Identifier))
+      return MatchOperand_NoMatch;
+  if (getLexer().getTok().getIdentifier() != "dc")
+      return MatchOperand_NoMatch;
+
+  getParser().Lex(); // Eat "dc"
+
+  if (getLexer().isNot(AsmToken::LBrac)) {
+    Error(getLoc(), "expected '['");
+    return MatchOperand_ParseFail;
+  }
+
+  getParser().Lex(); // Eat "["
+
+  if (getLexer().isNot(AsmToken::Integer)) {
+    Error(getLoc(), "expected integer"); 
+    return MatchOperand_ParseFail;
+  }
+
+  unsigned offset = getParser().getTok().getIntVal();
+
+  getParser().Lex(); // Eat offset
+
+  if (getLexer().isNot(AsmToken::RBrac)) {
+    Error(getLoc(), "expected ']'"); 
+    return MatchOperand_ParseFail;
+  }
+
+  getParser().Lex(); // Eat "]"
+
+  printf("Successful matching of DC operand\n");
+
+  Operands.push_back(RISCVOperand::createDC(offset, S, E, isRV64()));
+
+  // The line below doesn't match properly
+  // Operands.push_back(RISCVOperand::createImm(MCConstantExpr::create(offset, getContext()),
+  //                              S, E, isRV64()));
+  return MatchOperand_Success;
+}
+
 OperandMatchResultTy RISCVAsmParser::parseImmediate(OperandVector &Operands) {
   SMLoc S = getLoc();
   SMLoc E = SMLoc::getFromPointer(S.getPointer() - 1);
@@ -1731,6 +1811,10 @@ bool RISCVAsmParser::parseOperand(OperandVector &Operands, StringRef Mnemonic) {
   // Attempt to parse token as a register.
   if (parseRegister(Operands, true) == MatchOperand_Success)
     return false;
+
+  // Attempt to parse token as dc
+  if (parseDC(Operands) == MatchOperand_Success)
+      return false;
 
   // Attempt to parse token as an immediate
   if (parseImmediate(Operands) == MatchOperand_Success) {
