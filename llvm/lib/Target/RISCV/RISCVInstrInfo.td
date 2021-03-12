@@ -286,13 +286,6 @@ def DCOperand: AsmOperandClass {
 
 def DC : Operand<XLenVT> {
   let ParserMatchClass = DCOperand;
-/*
- * This didn't compile, said wrong namespace 
- * maybe operand type can only be used once?
- * let OperandType = "OPERAND_UIMM5";
- * let OperandNamespace = "RISCVOp";
- *
- * /
 }
 
 
@@ -413,7 +406,7 @@ class Shift_ri<bit arithshift, bits<3> funct3, string opcodestr>
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class ALU_rr<bits<7> funct7, bits<3> funct3, string opcodestr>
-    : RVInstR<funct7, funct3, OPC_OP, (outs GPR:$rd), (ins GPR:$rs1, GPR:$rs2),
+    : RVInstR<funct7, funct3, OPC_OP, (outs DC:$rd), (ins DC:$rs1, DC:$rs2),
               opcodestr, "$rd, $rs1, $rs2">;
 
 let hasNoSchedulingInfo = 1,
@@ -654,7 +647,7 @@ def DRET : Priv<"dret", 0b0111101>, Sched<[]> {
 // Assembler Pseudo Instructions (User-Level ISA, Version 2.2, Chapter 20)
 //===----------------------------------------------------------------------===//
 
-def : InstAlias<"nop",           (ADDI      X0,      X0,       0)>;
+// def : InstAlias<"nop",           (ADDI      X0,      X0,       0)>;
 
 // Note that the size is 32 because up to 8 32-bit instructions are needed to
 // generate an arbitrary 64-bit immediate. However, the size does not really
@@ -681,6 +674,7 @@ def PseudoLD  : PseudoLoad<"ld">;
 def PseudoSD  : PseudoStore<"sd">;
 } // Predicates = [IsRV64]
 
+/*
 def : InstAlias<"mv $rd, $rs",   (ADDI GPR:$rd, GPR:$rs,       0)>;
 def : InstAlias<"not $rd, $rs",  (XORI GPR:$rd, GPR:$rs,      -1)>;
 def : InstAlias<"neg $rd, $rs",  (SUB  GPR:$rd,      X0, GPR:$rs)>;
@@ -833,6 +827,7 @@ def : InstAlias<"sltu $rd, $rs1, $imm12",
                 (SLTIU  GPR:$rd, GPR:$rs1, simm12:$imm12)>;
 }
 
+*/
 def : MnemonicAlias<"move", "mv">;
 
 // The SCALL and SBREAK instructions wererenamed to ECALL and EBREAK in
@@ -896,10 +891,12 @@ def SLLIUWPat : PatFrag<(ops node:$A, node:$B),
 
 /// Immediates
 
+/*
 def : Pat<(simm12:$imm), (ADDI X0, simm12:$imm)>;
 def : Pat<(simm32hi20:$imm), (LUI (HI20 imm:$imm))>;
 def : Pat<(simm32:$imm), (ADDI (LUI (HI20 imm:$imm)), (LO12Sext imm:$imm))>,
       Requires<[IsRV32]>;
+*/
 
 /// Simple arithmetic operations
 
@@ -963,6 +960,7 @@ def : PatGprSimm12<setlt, SLTI>;
 def : PatGprGpr<setult, SLTU>;
 def : PatGprSimm12<setult, SLTIU>;
 
+/*
 // Define pattern expansions for setcc operations that aren't directly
 // handled by a RISC-V instruction.
 def : Pat<(seteq GPR:$rs1, 0), (SLTIU GPR:$rs1, 1)>;
@@ -979,6 +977,7 @@ def : Pat<(setule GPR:$rs1, GPR:$rs2), (XORI (SLTU GPR:$rs2, GPR:$rs1), 1)>;
 def : Pat<(setgt GPR:$rs1, GPR:$rs2), (SLT GPR:$rs2, GPR:$rs1)>;
 def : Pat<(setge GPR:$rs1, GPR:$rs2), (XORI (SLT GPR:$rs1, GPR:$rs2), 1)>;
 def : Pat<(setle GPR:$rs1, GPR:$rs2), (XORI (SLT GPR:$rs2, GPR:$rs1), 1)>;
+*/
 
 let usesCustomInserter = 1 in
 class SelectCC_rrirr<RegisterClass valty, RegisterClass cmpty>
@@ -1033,8 +1032,10 @@ def PseudoBRIND : Pseudo<(outs), (ins GPR:$rs1, simm12:$imm12), []>,
                   PseudoInstExpansion<(JALR X0, GPR:$rs1, simm12:$imm12)>;
 
 def : Pat<(brind GPR:$rs1), (PseudoBRIND GPR:$rs1, 0)>;
+/*
 def : Pat<(brind (add GPR:$rs1, simm12:$imm12)),
           (PseudoBRIND GPR:$rs1, simm12:$imm12)>;
+*/
 
 // PseudoCALLReg is a generic pseudo instruction for calls which will eventually
 // expand to auipc and jalr while encoding, with any given register used as the

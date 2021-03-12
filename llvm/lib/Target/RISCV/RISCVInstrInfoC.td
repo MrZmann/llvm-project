@@ -7,11 +7,9 @@
 //===----------------------------------------------------------------------===//
 
 include "RISCVInstrFormatsC.td"
-
 //===----------------------------------------------------------------------===//
 // Operand definitions.
 //===----------------------------------------------------------------------===//
-
 def UImmLog2XLenNonZeroAsmOperand : AsmOperandClass {
   let Name = "UImmLog2XLenNonZero";
   let RenderMethod = "addImmOperands";
@@ -818,6 +816,7 @@ def : CompressPat<(ADDIW GPRNoX0:$rs1, GPRNoX0:$rs1, simm6:$imm),
                   (C_ADDIW GPRNoX0:$rs1, simm6:$imm)>;
 } // Predicates = [HasStdExtC, IsRV64]
 
+/*
 let Predicates = [HasStdExtC] in {
 def : CompressPat<(ADDI GPRNoX0:$rd, X0, simm6:$imm),
                   (C_LI GPRNoX0:$rd, simm6:$imm)>;
@@ -862,6 +861,7 @@ let isCompressOnly = true in
 def : CompressPat<(ADDW GPRC:$rs1, GPRC:$rs2, GPRC:$rs1),
                    (C_ADDW GPRC:$rs1, GPRC:$rs2)>;
 } // Predicates = [HasStdExtC, IsRV64]
+*/
 
 let Predicates = [HasStdExtC] in {
 def : CompressPat<(JAL X0, simm12_lsb0:$offset),
@@ -898,6 +898,7 @@ def : CompressPat<(LD GPRNoX0:$rd, SP:$rs1, uimm9_lsb000:$imm),
                   (C_LDSP GPRNoX0:$rd, SP:$rs1, uimm9_lsb000:$imm)>;
 } // Predicates = [HasStdExtC, IsRV64]
 
+/*
 let Predicates = [HasStdExtC] in {
 def : CompressPat<(JALR X0, GPRNoX0:$rs1, 0),
                   (C_JR GPRNoX0:$rs1)>;
@@ -939,3 +940,5 @@ let Predicates = [HasStdExtC, IsRV64] in {
 def : CompressPat<(SD GPR:$rs2, SP:$rs1, uimm9_lsb000:$imm),
                   (C_SDSP GPR:$rs2, SP:$rs1, uimm9_lsb000:$imm)>;
 } //  Predicates = [HasStdExtC, IsRV64]
+
+*/

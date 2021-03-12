@@ -1403,13 +1403,8 @@ OperandMatchResultTy RISCVAsmParser::parseDC(OperandVector &Operands) {
 
   getParser().Lex(); // Eat "]"
 
-  printf("Successful matching of DC operand\n");
-
   Operands.push_back(RISCVOperand::createDC(offset, S, E, isRV64()));
 
-  // The line below doesn't match properly
-  // Operands.push_back(RISCVOperand::createImm(MCConstantExpr::create(offset, getContext()),
-  //                              S, E, isRV64()));
   return MatchOperand_Success;
 }
 

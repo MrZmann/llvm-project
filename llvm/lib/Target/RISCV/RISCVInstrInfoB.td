@@ -606,6 +606,7 @@ def : InstAlias<"orc $rd, $rs",     (GORCI GPR:$rd, GPR:$rs, 0b111111)>;
 //===----------------------------------------------------------------------===//
 // Compressed Instruction patterns
 //===----------------------------------------------------------------------===//
+/*
 let Predicates = [HasStdExtZbproposedc, HasStdExtC] in {
 def : CompressPat<(XORI GPRC:$rs1, GPRC:$rs1, -1),
                   (C_NOT GPRC:$rs1)>;
@@ -657,6 +658,7 @@ def : Pat<(xor GPR:$rs1, BSETINVMask:$mask),
 def : Pat<(and (srl GPR:$rs1, uimmlog2xlen:$shamt), (XLenVT 1)),
           (BEXTI GPR:$rs1, uimmlog2xlen:$shamt)>;
 }
+*/
 
 // There's no encoding for roli in the the 'B' extension as it can be
 // implemented with rori by negating the immediate.
