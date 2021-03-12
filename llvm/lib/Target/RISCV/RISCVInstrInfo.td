@@ -393,7 +393,7 @@ def MERRY_ASM : MERRY<0, 0b111, "merry_asm">;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class ALU_ri<bits<3> funct3, string opcodestr>
-    : RVInstI<funct3, OPC_OP_IMM, (outs GPR:$rd), (ins GPR:$rs1, simm12:$imm12),
+    : RVInstI<funct3, OPC_OP_IMM, (outs DC:$rd), (ins DC:$rs1, simm12:$imm12),
               opcodestr, "$rd, $rs1, $imm12">,
       Sched<[WriteIALU, ReadIALU]>;
 
@@ -836,10 +836,12 @@ def : MnemonicAlias<"move", "mv">;
 def : MnemonicAlias<"scall", "ecall">;
 def : MnemonicAlias<"sbreak", "ebreak">;
 
+/*
 // This alias was added to the spec in December 2020. Don't print it by default
 // to allow assembly we print to be compatible with versions of GNU assembler
 // that don't support this alias.
 def : InstAlias<"zext.b $rd, $rs", (ANDI GPR:$rd, GPR:$rs, 0xFF), 0>;
+*/
 
 //===----------------------------------------------------------------------===//
 // Pseudo-instructions and codegen patterns
@@ -1221,6 +1223,7 @@ def : Pat<(SLLIUWPat GPR:$rs1, uimm5:$shamt),
           (SRLI (SLLI GPR:$rs1, 32), (ImmSubFrom32 uimm5:$shamt))>;
 }
 
+/*
 let Predicates = [IsRV64] in {
 
 /// sext and zext
@@ -1262,6 +1265,8 @@ defm : LdPat<load, LD>;
 defm : StPat<truncstorei32, SW, GPR>;
 defm : StPat<store, SD, GPR>;
 } // Predicates = [IsRV64]
+
+*/
 
 /// readcyclecounter
 // On RV64, we can directly read the 64-bit "cycle" CSR.

@@ -753,6 +753,7 @@ class CompressPat<dag input, dag output> {
 // Patterns are defined in the same order the compressed instructions appear
 // on page 82 of the ISA manual.
 
+/*
 // Quadrant 0
 let Predicates = [HasStdExtC] in {
 def : CompressPat<(ADDI GPRC:$rd, SP:$rs1, uimm10_lsb00nonzero:$imm),
@@ -898,7 +899,6 @@ def : CompressPat<(LD GPRNoX0:$rd, SP:$rs1, uimm9_lsb000:$imm),
                   (C_LDSP GPRNoX0:$rd, SP:$rs1, uimm9_lsb000:$imm)>;
 } // Predicates = [HasStdExtC, IsRV64]
 
-/*
 let Predicates = [HasStdExtC] in {
 def : CompressPat<(JALR X0, GPRNoX0:$rs1, 0),
                   (C_JR GPRNoX0:$rs1)>;
