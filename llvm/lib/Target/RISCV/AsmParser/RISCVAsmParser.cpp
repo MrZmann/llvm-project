@@ -1707,8 +1707,9 @@ RISCVAsmParser::parseMemOpBaseReg(OperandVector &Operands) {
   getParser().Lex(); // Eat '('
   Operands.push_back(RISCVOperand::createToken("(", getLoc(), isRV64()));
 
-  if (parseRegister(Operands) != MatchOperand_Success) {
-    Error(getLoc(), "expected register");
+  // Changed this to take DC operand instead of register
+  if (parseDC(Operands) != MatchOperand_Success) {
+    Error(getLoc(), "expected DC operand");
     return MatchOperand_ParseFail;
   }
 

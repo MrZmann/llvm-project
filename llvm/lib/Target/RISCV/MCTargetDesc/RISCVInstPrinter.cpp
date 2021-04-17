@@ -149,6 +149,18 @@ void RISCVInstPrinter::printFenceArg(const MCInst *MI, unsigned OpNo,
     O << "unknown";
 }
 
+
+void RISCVInstPrinter::printDCOperand(const MCInst *MI, unsigned OpNo,
+                                     const MCSubtargetInfo &STI,
+                                     raw_ostream &O) {
+  unsigned Offset = MI->getOperand(OpNo).getImm();
+  assert ((Offset < 32) && "Invalid offset in printDCOperand");
+
+  O << "dc[" << Offset << "]";
+}
+
+
+
 void RISCVInstPrinter::printFRMArg(const MCInst *MI, unsigned OpNo,
                                    const MCSubtargetInfo &STI, raw_ostream &O) {
   auto FRMArg =

@@ -492,11 +492,13 @@ def C_ZEXTW : RVBInstC<0b10, "c.zext.w">, Sched<[]>;
 // Pseudo Instructions
 //===----------------------------------------------------------------------===//
 
+/*
 let Predicates = [HasStdExtZba, IsRV64] in {
 // NOTE: The 0.93 spec shows zext.w as an alias of pack/packw. It has been
 // changed to add.uw in a draft after 0.94.
 def : InstAlias<"zext.w $rd, $rs", (ADDUW GPR:$rd, GPR:$rs, X0)>;
 }
+*/
 
 let Predicates = [HasStdExtZbp] in {
 def : InstAlias<"rev.p $rd, $rs",  (GREVI GPR:$rd, GPR:$rs, 0b00001)>;
