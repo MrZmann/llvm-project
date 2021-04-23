@@ -257,7 +257,9 @@ class PatFpr16Fpr16DynFrm<SDPatternOperator OpNode, RVInstRFrm Inst>
 let Predicates = [HasStdExtZfh] in {
 
 /// Float constants
+/*
 def : Pat<(f16 (fpimm0)), (FMV_H_X X0)>;
+*/
 
 /// Float conversion operations
 
@@ -271,6 +273,7 @@ def : PatFpr16Fpr16DynFrm<fsub, FSUB_H>;
 def : PatFpr16Fpr16DynFrm<fmul, FMUL_H>;
 def : PatFpr16Fpr16DynFrm<fdiv, FDIV_H>;
 
+/*
 def : Pat<(fsqrt FPR16:$rs1), (FSQRT_H FPR16:$rs1, 0b111)>;
 
 def : Pat<(fneg FPR16:$rs1), (FSGNJN_H $rs1, $rs1)>;
@@ -313,6 +316,7 @@ def : PatFpr16Fpr16<setolt, FLT_H>;
 def : PatFpr16Fpr16<setle, FLE_H>;
 def : PatFpr16Fpr16<setole, FLE_H>;
 
+*/
 def Select_FPR16_Using_CC_GPR : SelectCC_rrirr<FPR16, GPR>;
 
 /// Loads
@@ -321,10 +325,10 @@ defm : LdPat<load, FLH>;
 
 /// Stores
 
-defm : StPat<store, FSH, FPR16>;
+// defm : StPat<store, FSH, FPR16>;
 
 /// Float conversion operations
-
+/*
 // f32 -> f16, f16 -> f32
 def : Pat<(fpround FPR32:$rs1), (FCVT_H_S FPR32:$rs1, 0b111)>;
 def : Pat<(fpextend FPR16:$rs1), (FCVT_S_H FPR16:$rs1)>;
@@ -332,8 +336,10 @@ def : Pat<(fpextend FPR16:$rs1), (FCVT_S_H FPR16:$rs1)>;
 // Moves (no conversion)
 def : Pat<(riscv_fmv_h_x GPR:$src), (FMV_H_X GPR:$src)>;
 def : Pat<(riscv_fmv_x_anyexth FPR16:$src), (FMV_X_H FPR16:$src)>;
+*/
 } // Predicates = [HasStdExtZfh]
 
+/*
 let Predicates = [HasStdExtZfh, IsRV32] in {
 // float->[u]int. Round-to-zero must be used.
 def : Pat<(fp_to_sint FPR16:$rs1), (FCVT_W_H $rs1, 0b001)>;
@@ -369,3 +375,4 @@ let Predicates = [HasStdExtZfh, HasStdExtD] in {
 def : Pat<(fpround FPR64:$rs1), (FCVT_H_D FPR64:$rs1, 0b111)>;
 def : Pat<(fpextend FPR16:$rs1), (FCVT_D_H FPR16:$rs1)>;
 }
+*/

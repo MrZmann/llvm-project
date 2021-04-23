@@ -694,6 +694,7 @@ def C_SRAI64_HINT : RVInst16CI<0b100, 0b01, (outs GPRC:$rd_wb),
 //===----------------------------------------------------------------------===//
 
 let EmitPriority = 0 in {
+/*
 let Predicates = [HasStdExtC, HasStdExtD] in
 def : InstAlias<"c.fld $rd, (${rs1})", (C_FLD FPR64C:$rd, GPRC:$rs1, 0)>;
 
@@ -737,6 +738,7 @@ def : InstAlias<"c.fswsp $rs2, (${rs1})", (C_FSWSP FPR32C:$rs2, SP:$rs1, 0)>;
 
 let Predicates = [HasStdExtC, IsRV64] in
 def : InstAlias<"c.sdsp $rs2, (${rs1})", (C_SDSP GPRC:$rs2, SP:$rs1, 0)>;
+*/
 }
 
 //===----------------------------------------------------------------------===//

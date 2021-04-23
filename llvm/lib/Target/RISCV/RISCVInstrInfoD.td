@@ -31,33 +31,33 @@ def RISCVSplitF64     : SDNode<"RISCVISD::SplitF64", SDT_RISCVSplitF64>;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class FPFMAD_rrr_frm<RISCVOpcode opcode, string opcodestr>
-    : RVInstR4<0b01, opcode, (outs FPR64:$rd),
-               (ins FPR64:$rs1, FPR64:$rs2, FPR64:$rs3, frmarg:$funct3),
+    : RVInstR4<0b01, opcode, (outs DC:$rd),
+               (ins DC:$rs1, DC:$rs2, DC:$rs3, frmarg:$funct3),
                 opcodestr, "$rd, $rs1, $rs2, $rs3, $funct3">;
 
 class FPFMADDynFrmAlias<FPFMAD_rrr_frm Inst, string OpcodeStr>
     : InstAlias<OpcodeStr#" $rd, $rs1, $rs2, $rs3",
-                (Inst FPR64:$rd, FPR64:$rs1, FPR64:$rs2, FPR64:$rs3, 0b111)>;
+                (Inst DC:$rd, DC:$rs1, DC:$rs2, DC:$rs3, 0b111)>;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class FPALUD_rr<bits<7> funct7, bits<3> funct3, string opcodestr>
-    : RVInstR<funct7, funct3, OPC_OP_FP, (outs FPR64:$rd),
-              (ins FPR64:$rs1, FPR64:$rs2), opcodestr, "$rd, $rs1, $rs2">;
+    : RVInstR<funct7, funct3, OPC_OP_FP, (outs DC:$rd),
+              (ins DC:$rs1, DC:$rs2), opcodestr, "$rd, $rs1, $rs2">;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class FPALUD_rr_frm<bits<7> funct7, string opcodestr>
-    : RVInstRFrm<funct7, OPC_OP_FP, (outs FPR64:$rd),
-                (ins FPR64:$rs1, FPR64:$rs2, frmarg:$funct3), opcodestr,
+    : RVInstRFrm<funct7, OPC_OP_FP, (outs DC:$rd),
+                (ins DC:$rs1, DC:$rs2, frmarg:$funct3), opcodestr,
                  "$rd, $rs1, $rs2, $funct3">;
 
 class FPALUDDynFrmAlias<FPALUD_rr_frm Inst, string OpcodeStr>
     : InstAlias<OpcodeStr#" $rd, $rs1, $rs2",
-                (Inst FPR64:$rd, FPR64:$rs1, FPR64:$rs2, 0b111)>;
+                (Inst DC:$rd, DC:$rs1, DC:$rs2, 0b111)>;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class FPCmpD_rr<bits<3> funct3, string opcodestr>
-    : RVInstR<0b1010001, funct3, OPC_OP_FP, (outs GPR:$rd),
-              (ins FPR64:$rs1, FPR64:$rs2), opcodestr, "$rd, $rs1, $rs2">,
+    : RVInstR<0b1010001, funct3, OPC_OP_FP, (outs DC:$rd),
+              (ins DC:$rs1, DC:$rs2), opcodestr, "$rd, $rs1, $rs2">,
       Sched<[WriteFCmp64, ReadFCmp64, ReadFCmp64]>;
 
 //===----------------------------------------------------------------------===//
@@ -67,8 +67,8 @@ class FPCmpD_rr<bits<3> funct3, string opcodestr>
 let Predicates = [HasStdExtD] in {
 
 let hasSideEffects = 0, mayLoad = 1, mayStore = 0 in
-def FLD : RVInstI<0b011, OPC_LOAD_FP, (outs FPR64:$rd),
-                  (ins GPR:$rs1, simm12:$imm12),
+def FLD : RVInstI<0b011, OPC_LOAD_FP, (outs DC:$rd),
+                  (ins DC:$rs1, simm12:$imm12),
                   "fld", "$rd, ${imm12}(${rs1})">,
           Sched<[WriteFLD64, ReadFMemBase]>;
 
@@ -77,7 +77,7 @@ def FLD : RVInstI<0b011, OPC_LOAD_FP, (outs FPR64:$rd),
 // encoding.
 let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in
 def FSD : RVInstS<0b011, OPC_STORE_FP, (outs),
-                  (ins FPR64:$rs2, GPR:$rs1, simm12:$imm12),
+                  (ins DC:$rs2, DC:$rs1, simm12:$imm12),
                    "fsd", "$rs2, ${imm12}(${rs1})">,
           Sched<[WriteFST64, ReadStoreData, ReadFMemBase]>;
 
@@ -208,19 +208,19 @@ def FMV_D_X : FPUnaryOp_r<0b1111001, 0b000, FPR64, GPR, "fmv.d.x">,
 //===----------------------------------------------------------------------===//
 
 let Predicates = [HasStdExtD] in {
-def : InstAlias<"fld $rd, (${rs1})",  (FLD FPR64:$rd,  GPR:$rs1, 0), 0>;
-def : InstAlias<"fsd $rs2, (${rs1})", (FSD FPR64:$rs2, GPR:$rs1, 0), 0>;
+def : InstAlias<"fld $rd, (${rs1})",  (FLD DC:$rd,  DC:$rs1, 0), 0>;
+def : InstAlias<"fsd $rs2, (${rs1})", (FSD DC:$rs2, DC:$rs1, 0), 0>;
 
-def : InstAlias<"fmv.d $rd, $rs",  (FSGNJ_D  FPR64:$rd, FPR64:$rs, FPR64:$rs)>;
-def : InstAlias<"fabs.d $rd, $rs", (FSGNJX_D FPR64:$rd, FPR64:$rs, FPR64:$rs)>;
-def : InstAlias<"fneg.d $rd, $rs", (FSGNJN_D FPR64:$rd, FPR64:$rs, FPR64:$rs)>;
+def : InstAlias<"fmv.d $rd, $rs",  (FSGNJ_D  DC:$rd, DC:$rs, DC:$rs)>;
+def : InstAlias<"fabs.d $rd, $rs", (FSGNJX_D DC:$rd, DC:$rs, DC:$rs)>;
+def : InstAlias<"fneg.d $rd, $rs", (FSGNJN_D DC:$rd, DC:$rs, DC:$rs)>;
 
 // fgt.d/fge.d are recognised by the GNU assembler but the canonical
 // flt.d/fle.d forms will always be printed. Therefore, set a zero weight.
 def : InstAlias<"fgt.d $rd, $rs, $rt",
-                (FLT_D GPR:$rd, FPR64:$rt, FPR64:$rs), 0>;
+                (FLT_D DC:$rd, DC:$rt, DC:$rs), 0>;
 def : InstAlias<"fge.d $rd, $rs, $rt",
-                (FLE_D GPR:$rd, FPR64:$rt, FPR64:$rs), 0>;
+                (FLE_D DC:$rd, DC:$rt, DC:$rs), 0>;
 
 def PseudoFLD  : PseudoFloatLoad<"fld", FPR64>;
 def PseudoFSD  : PseudoStore<"fsd", FPR64>;
@@ -241,19 +241,24 @@ let Predicates = [HasStdExtD] in {
 /// Float conversion operations
 
 // f64 -> f32, f32 -> f64
+/*
 def : Pat<(fpround FPR64:$rs1), (FCVT_S_D FPR64:$rs1, 0b111)>;
 def : Pat<(fpextend FPR32:$rs1), (FCVT_D_S FPR32:$rs1)>;
+*/
 
 // [u]int<->double conversion patterns must be gated on IsRV32 or IsRV64, so
 // are defined later.
 
 /// Float arithmetic operations
 
+/*
 def : PatFpr64Fpr64DynFrm<fadd, FADD_D>;
 def : PatFpr64Fpr64DynFrm<fsub, FSUB_D>;
 def : PatFpr64Fpr64DynFrm<fmul, FMUL_D>;
 def : PatFpr64Fpr64DynFrm<fdiv, FDIV_D>;
+*/
 
+/*
 def : Pat<(fsqrt FPR64:$rs1), (FSQRT_D FPR64:$rs1, 0b111)>;
 
 def : Pat<(fneg FPR64:$rs1), (FSGNJN_D $rs1, $rs1)>;
@@ -280,6 +285,7 @@ def : Pat<(fma (fneg FPR64:$rs1), FPR64:$rs2, FPR64:$rs3),
 // fnmadd: -rs1 * rs2 - rs3
 def : Pat<(fma (fneg FPR64:$rs1), FPR64:$rs2, (fneg FPR64:$rs3)),
           (FNMADD_D FPR64:$rs1, FPR64:$rs2, FPR64:$rs3, 0b111)>;
+*/
 
 // The RISC-V 2.2 user-level ISA spec defines fmin and fmax as returning the
 // canonical NaN when giving a signaling NaN. This doesn't match the LLVM
@@ -287,6 +293,7 @@ def : Pat<(fma (fneg FPR64:$rs1), FPR64:$rs2, (fneg FPR64:$rs3)),
 // draft 2.3 ISA spec changes the definition of fmin and fmax in a way that
 // matches LLVM's fminnum and fmaxnum
 // <https://github.com/riscv/riscv-isa-manual/commit/cd20cee7efd9bac7c5aa127ec3b451749d2b3cce>.
+/*
 def : PatFpr64Fpr64<fminnum, FMIN_D>;
 def : PatFpr64Fpr64<fmaxnum, FMAX_D>;
 
@@ -298,6 +305,7 @@ def : PatFpr64Fpr64<setlt, FLT_D>;
 def : PatFpr64Fpr64<setolt, FLT_D>;
 def : PatFpr64Fpr64<setle, FLE_D>;
 def : PatFpr64Fpr64<setole, FLE_D>;
+*/
 
 def Select_FPR64_Using_CC_GPR : SelectCC_rrirr<FPR64, GPR>;
 
@@ -306,9 +314,9 @@ def Select_FPR64_Using_CC_GPR : SelectCC_rrirr<FPR64, GPR>;
 defm : LdPat<load, FLD>;
 
 /// Stores
-
+/*
 defm : StPat<store, FSD, FPR64>;
-
+*/
 /// Pseudo-instructions needed for the soft-float ABI with RV32D
 
 // Moves two GPRs to an FPR.
@@ -325,6 +333,7 @@ def SplitF64Pseudo
 
 } // Predicates = [HasStdExtD]
 
+/*
 let Predicates = [HasStdExtD, IsRV32] in {
 
 /// Float constants
@@ -366,3 +375,4 @@ def : Pat<(fp_to_uint FPR64:$rs1), (FCVT_LU_D FPR64:$rs1, 0b001)>;
 def : Pat<(sint_to_fp GPR:$rs1), (FCVT_D_L GPR:$rs1, 0b111)>;
 def : Pat<(uint_to_fp GPR:$rs1), (FCVT_D_LU GPR:$rs1, 0b111)>;
 } // Predicates = [HasStdExtD, IsRV64]
+*/

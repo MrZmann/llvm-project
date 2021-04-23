@@ -49,51 +49,51 @@ def frmarg : Operand<XLenVT> {
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class FPFMAS_rrr_frm<RISCVOpcode opcode, string opcodestr>
-    : RVInstR4<0b00, opcode, (outs FPR32:$rd),
-               (ins FPR32:$rs1, FPR32:$rs2, FPR32:$rs3, frmarg:$funct3),
+    : RVInstR4<0b00, opcode, (outs DC:$rd),
+               (ins DC:$rs1, DC:$rs2, DC:$rs3, frmarg:$funct3),
                 opcodestr, "$rd, $rs1, $rs2, $rs3, $funct3">;
 
 class FPFMASDynFrmAlias<FPFMAS_rrr_frm Inst, string OpcodeStr>
     : InstAlias<OpcodeStr#" $rd, $rs1, $rs2, $rs3",
-                (Inst FPR32:$rd, FPR32:$rs1, FPR32:$rs2, FPR32:$rs3, 0b111)>;
+                (Inst DC:$rd, DC:$rs1, DC:$rs2, DC:$rs3, 0b111)>;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class FPALUS_rr<bits<7> funct7, bits<3> funct3, string opcodestr>
-    : RVInstR<funct7, funct3, OPC_OP_FP, (outs FPR32:$rd),
-              (ins FPR32:$rs1, FPR32:$rs2), opcodestr, "$rd, $rs1, $rs2">;
+    : RVInstR<funct7, funct3, OPC_OP_FP, (outs DC:$rd),
+              (ins DC:$rs1, DC:$rs2), opcodestr, "$rd, $rs1, $rs2">;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class FPALUS_rr_frm<bits<7> funct7, string opcodestr>
-    : RVInstRFrm<funct7, OPC_OP_FP, (outs FPR32:$rd),
-                 (ins FPR32:$rs1, FPR32:$rs2, frmarg:$funct3), opcodestr,
+    : RVInstRFrm<funct7, OPC_OP_FP, (outs DC:$rd),
+                 (ins DC:$rs1, DC:$rs2, frmarg:$funct3), opcodestr,
                   "$rd, $rs1, $rs2, $funct3">;
 
 class FPALUSDynFrmAlias<FPALUS_rr_frm Inst, string OpcodeStr>
     : InstAlias<OpcodeStr#" $rd, $rs1, $rs2",
-                (Inst FPR32:$rd, FPR32:$rs1, FPR32:$rs2, 0b111)>;
+                (Inst DC:$rd, DC:$rs1, DC:$rs2, 0b111)>;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class FPUnaryOp_r<bits<7> funct7, bits<3> funct3, RegisterClass rdty,
                 RegisterClass rs1ty, string opcodestr>
-    : RVInstR<funct7, funct3, OPC_OP_FP, (outs rdty:$rd), (ins rs1ty:$rs1),
+    : RVInstR<funct7, funct3, OPC_OP_FP, (outs DC:$rd), (ins DC:$rs1),
               opcodestr, "$rd, $rs1">;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class FPUnaryOp_r_frm<bits<7> funct7, RegisterClass rdty, RegisterClass rs1ty,
                       string opcodestr>
-    : RVInstRFrm<funct7, OPC_OP_FP, (outs rdty:$rd),
-                 (ins rs1ty:$rs1, frmarg:$funct3), opcodestr,
+    : RVInstRFrm<funct7, OPC_OP_FP, (outs DC:$rd),
+                 (ins DC:$rs1, frmarg:$funct3), opcodestr,
                   "$rd, $rs1, $funct3">;
 
 class FPUnaryOpDynFrmAlias<FPUnaryOp_r_frm Inst, string OpcodeStr,
                            RegisterClass rdty, RegisterClass rs1ty>
     : InstAlias<OpcodeStr#" $rd, $rs1",
-                (Inst rdty:$rd, rs1ty:$rs1, 0b111)>;
+                (Inst DC:$rd, DC:$rs1, 0b111)>;
 
 let hasSideEffects = 0, mayLoad = 0, mayStore = 0 in
 class FPCmpS_rr<bits<3> funct3, string opcodestr>
-    : RVInstR<0b1010000, funct3, OPC_OP_FP, (outs GPR:$rd),
-              (ins FPR32:$rs1, FPR32:$rs2), opcodestr, "$rd, $rs1, $rs2">,
+    : RVInstR<0b1010000, funct3, OPC_OP_FP, (outs DC:$rd),
+              (ins DC:$rs1, DC:$rs2), opcodestr, "$rd, $rs1, $rs2">,
       Sched<[WriteFCmp32, ReadFCmp32, ReadFCmp32]>;
 
 //===----------------------------------------------------------------------===//
@@ -102,8 +102,8 @@ class FPCmpS_rr<bits<3> funct3, string opcodestr>
 
 let Predicates = [HasStdExtF] in {
 let hasSideEffects = 0, mayLoad = 1, mayStore = 0 in
-def FLW : RVInstI<0b010, OPC_LOAD_FP, (outs FPR32:$rd),
-                  (ins GPR:$rs1, simm12:$imm12),
+def FLW : RVInstI<0b010, OPC_LOAD_FP, (outs DC:$rd),
+                  (ins DC:$rs1, simm12:$imm12),
                    "flw", "$rd, ${imm12}(${rs1})">,
           Sched<[WriteFLD32, ReadFMemBase]>;
 
@@ -112,7 +112,7 @@ def FLW : RVInstI<0b010, OPC_LOAD_FP, (outs FPR32:$rd),
 // encoding.
 let hasSideEffects = 0, mayLoad = 0, mayStore = 1 in
 def FSW : RVInstS<0b010, OPC_STORE_FP, (outs),
-                  (ins FPR32:$rs2, GPR:$rs1, simm12:$imm12),
+                  (ins DC:$rs2, DC:$rs1, simm12:$imm12),
                    "fsw", "$rs2, ${imm12}(${rs1})">,
           Sched<[WriteFST32, ReadStoreData, ReadFMemBase]>;
 
@@ -300,6 +300,7 @@ class PatFpr32Fpr32DynFrm<SDPatternOperator OpNode, RVInstRFrm Inst>
 
 let Predicates = [HasStdExtF] in {
 
+/*
 /// Float constants
 def : Pat<(f32 (fpimm0)), (FMV_W_X X0)>;
 
@@ -356,9 +357,11 @@ def : PatFpr32Fpr32<setlt, FLT_S>;
 def : PatFpr32Fpr32<setolt, FLT_S>;
 def : PatFpr32Fpr32<setle, FLE_S>;
 def : PatFpr32Fpr32<setole, FLE_S>;
+*/
 
 def Select_FPR32_Using_CC_GPR : SelectCC_rrirr<FPR32, GPR>;
 
+/*
 /// Loads
 
 defm : LdPat<load, FLW>;
@@ -366,9 +369,11 @@ defm : LdPat<load, FLW>;
 /// Stores
 
 defm : StPat<store, FSW, FPR32>;
+*/
 
 } // Predicates = [HasStdExtF]
 
+/*
 let Predicates = [HasStdExtF, IsRV32] in {
 // Moves (no conversion)
 def : Pat<(bitconvert GPR:$rs1), (FMV_W_X GPR:$rs1)>;
@@ -407,3 +412,4 @@ def : Pat<(uint_to_fp (zexti32 GPR:$rs1)), (FCVT_S_WU $rs1, 0b111)>;
 def : Pat<(sint_to_fp GPR:$rs1), (FCVT_S_L $rs1, 0b111)>;
 def : Pat<(uint_to_fp GPR:$rs1), (FCVT_S_LU $rs1, 0b111)>;
 } // Predicates = [HasStdExtF, IsRV64]
+*/

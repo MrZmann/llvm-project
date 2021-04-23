@@ -190,7 +190,7 @@ class Pseudo<dag outs, dag ins, list<dag> pattern, string opcodestr = "", string
 
 // Pseudo load instructions.
 class PseudoLoad<string opcodestr, RegisterClass rdty = GPR>
-    : Pseudo<(outs rdty:$rd), (ins bare_symbol:$addr), [], opcodestr, "$rd, $addr"> {
+    : Pseudo<(outs DC:$rd), (ins bare_symbol:$addr), [], opcodestr, "$rd, $addr"> {
   let hasSideEffects = 0;
   let mayLoad = 1;
   let mayStore = 0;
@@ -199,7 +199,7 @@ class PseudoLoad<string opcodestr, RegisterClass rdty = GPR>
 }
 
 class PseudoFloatLoad<string opcodestr, RegisterClass rdty = GPR>
-    : Pseudo<(outs rdty:$rd, GPR:$tmp), (ins bare_symbol:$addr), [], opcodestr, "$rd, $addr, $tmp"> {
+    : Pseudo<(outs DC:$rd, DC:$tmp), (ins bare_symbol:$addr), [], opcodestr, "$rd, $addr, $tmp"> {
   let hasSideEffects = 0;
   let mayLoad = 1;
   let mayStore = 0;
@@ -209,7 +209,7 @@ class PseudoFloatLoad<string opcodestr, RegisterClass rdty = GPR>
 
 // Pseudo store instructions.
 class PseudoStore<string opcodestr, RegisterClass rsty = GPR>
-    : Pseudo<(outs rsty:$rs, GPR:$tmp), (ins bare_symbol:$addr), [], opcodestr, "$rs, $addr, $tmp"> {
+    : Pseudo<(outs DC:$rs, DC:$tmp), (ins bare_symbol:$addr), [], opcodestr, "$rs, $addr, $tmp"> {
   let hasSideEffects = 0;
   let mayLoad = 0;
   let mayStore = 1;
